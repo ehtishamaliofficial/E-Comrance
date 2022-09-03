@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
+import crypto from 'crypto'
 
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    name:{
-      type: String,
+    name: {
+        type: String,
         required: true
     },
     email: {
@@ -27,9 +28,9 @@ const userSchema = new Schema({
     avatar: {
         pablicId: {
             type: String,
-            required: true                                                        
+            required: true
         },
-        url:{
+        url: {
             type: String,
             required: true
         }
@@ -39,6 +40,14 @@ const userSchema = new Schema({
 
 });
 
-const User = mongoose.model('User', userSchema);
+userSchema.method.getResetPasswordToken = function () {
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    this.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+
+    return resetToken;
+}
+
+const User = mongoose.model('User',userSchema);
 
 export default User;
